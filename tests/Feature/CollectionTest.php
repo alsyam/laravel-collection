@@ -238,4 +238,78 @@ class CollectionTest extends TestCase
             return $value == "cuy";
         }));
     }
+
+    public function testGeouping()
+    {
+        $collection = collect([
+            [
+                "name" => "al",
+                "department" => "IT",
+            ],
+            [
+                "name" => "syam",
+                "department" => "HR",
+            ],
+            [
+                "name" => "cuy",
+                "department" => "IT",
+            ]
+        ]);
+
+        $result = $collection->groupBy("department");
+
+        assertEquals([
+            "IT" => collect([
+                [
+                    "name" => "al",
+                    "department" => "IT",
+                ],
+                [
+                    "name" => "cuy",
+                    "department" => "IT",
+                ]
+            ]),
+            "HR" => collect([
+                [
+                    "name" => "syam",
+                    "department" => "HR",
+                ]
+            ])
+        ], $result->all());
+
+        $result = $collection->groupBy(function ($value, $key) {
+            return strtolower($value["department"]);
+        });
+
+        assertEquals([
+            "it" => collect([
+                [
+                    "name" => "al",
+                    "department" => "IT",
+                ],
+                [
+                    "name" => "cuy",
+                    "department" => "IT",
+                ]
+            ]),
+            "hr" => collect([
+                [
+                    "name" => "syam",
+                    "department" => "HR",
+                ]
+            ])
+        ], $result->all());
+    }
+
+    public function testSlice()
+    {
+        $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+        $result = $collection->slice(3);
+
+        assertEqualsCanonicalizing([4, 5, 6, 7, 8, 9], $result->all());
+        $result = $collection->slice(3, 2);
+
+        assertEqualsCanonicalizing([4, 5], $result->all());
+    }
 }
