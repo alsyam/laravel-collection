@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Data\Person;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-
+use App\Data\Person;
 use function PHPUnit\Framework\assertEquals;
+use Illuminate\Foundation\Testing\WithFaker;
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use function PHPUnit\Framework\assertEqualsCanonicalizing;
 
 class CollectionTest extends TestCase
@@ -205,5 +205,37 @@ class CollectionTest extends TestCase
         });
 
         $this->assertEqualsCanonicalizing([2, 4, 6, 8, 10], $result->all());
+    }
+
+    public function testPartition()
+    {
+        $collection = collect([
+            "al" => 100,
+            "cuy" => 80,
+            "syam" => 90
+        ]);
+        [$result1, $result2] = $collection->partition(function ($item, $key) {
+            return $item >= 90;
+        });
+        $this->assertEquals([
+            "al" => 100,
+            "syam" => 90,
+        ], $result1->all());
+        $this->assertEquals([
+            "cuy" => 80
+        ], $result2->all());
+    }
+
+    public function testTesting()
+    {
+        $collection = collect([
+            "al",
+            "syam",
+            "cuy"
+        ]);
+        self::assertTrue($collection->contains("al"));
+        self::assertTrue($collection->contains(function ($value, $key) {
+            return $value == "cuy";
+        }));
     }
 }
