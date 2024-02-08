@@ -8,6 +8,8 @@ use function PHPUnit\Framework\assertEquals;
 use Illuminate\Foundation\Testing\WithFaker;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\LazyCollection;
+
 use function PHPUnit\Framework\assertEqualsCanonicalizing;
 
 class CollectionTest extends TestCase
@@ -383,5 +385,77 @@ class CollectionTest extends TestCase
         });
 
         $this->assertEquals(2, $result);
+    }
+
+    public function testRandom()
+    {
+        $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        $result = $collection->random();
+        $this->assertTrue(in_array($result, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+
+        // $result = $collection->random(5);
+        // $this->assertTrue(in_array($result, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
+    }
+
+    public function testCheckingExistence()
+    {
+        $collection = collect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        $this->assertTrue($collection->isNotEmpty());
+        $this->assertFalse($collection->isEmpty());
+        $this->assertTrue($collection->contains(9));
+        $this->assertFalse($collection->contains(78));
+        $this->assertTrue($collection->contains(function ($value, $key) {
+            return $value == 10;
+        }));
+    }
+
+    public function testOrdering()
+    {
+        $collection = collect([1, 4, 3, 2]);
+        $result = $collection->sort();
+        $this->assertEqualsCanonicalizing([1, 2, 3, 4], $result->all());
+
+        $result = $collection->sortDesc();
+        $this->assertEqualsCanonicalizing([4, 3, 2, 1], $result->all());
+    }
+
+    public function testAgregate()
+    {
+        $collection = collect([1, 2, 3, 4, 5]);
+        $result = $collection->sum();
+        $this->assertEquals(15, $result);
+
+        $result = $collection->avg();
+        $this->assertEquals(3, $result);
+
+        $result = $collection->min();
+        $this->assertEquals(1, $result);
+
+        $result = $collection->max();
+        $this->assertEquals(5, $result);
+    }
+    public function testReduce()
+    {
+        $collection = collect([1, 2, 3, 4, 5]);
+        $result = $collection->reduce(function ($carry, $item) {
+            return $carry + $item;
+        });
+        $this->assertEquals(15, $result);
+    }
+
+    public function testLazyCollection()
+    {
+        $collection = LazyCollection::make(function () {
+            $value = 0;
+
+            while (true) {
+                yield $value;
+                $value++;
+            }
+        });
+
+        $result = $collection->take(5);
+
+        $this->assertEqualsCanonicalizing([0, 1, 2, 3, 4], $result->all());
     }
 }
